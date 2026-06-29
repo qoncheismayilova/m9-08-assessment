@@ -1,0 +1,27 @@
+[
+  {
+    "id": "topic-1",
+    "name": "Linear Algebra",
+    "difficulty": "medium"
+  },
+  {
+    "id": "topic-2",
+    "name": "Python Basics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "topic-3",
+    "name": "Machine Learning",
+    "difficulty": "hard"
+  },
+  {
+    "id": "topic-4",
+    "name": "Statistics",
+    "difficulty": "hard"
+  },
+  {
+    "id": "topic-5",
+    "name": "Data Visualization",
+    "difficulty": "easy"
+  }
+]

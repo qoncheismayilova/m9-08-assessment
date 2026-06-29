@@ -4,63 +4,239 @@
 
 ## Overview
 
-This is your chance to put the second half of the unit together. You'll build a small but genuinely useful **agent** that uses **three tools** to accomplish a real, multi-step goal — deciding its own steps, the way an agent should — and returns a **structured result**. Then you'll show you understand the grown-up parts: one reliability safeguard and one safety mitigation.
+This project is a **Study Planner Agent** built using a hand-rolled agent loop in Python.
 
-No RAG is required here. This is about **agents and tool use**: an agent that reasons, calls tools, and acts.
+The agent uses three tools to solve a multi-step goal:
 
-## What You'll Build
+> Build me a study plan for my exam with total hours.
 
-An agent (use **Google ADK**, or a hand-rolled loop if you prefer — your choice) that:
+The agent decides which tools to use step by step, calculates the effort for each topic, and returns a structured result.
 
-- has **three tools** it can call,
-- is given a **multi-step goal** it can't satisfy with a single tool call,
-- **decides for itself** which tools to use and in what order,
-- returns a **structured final result** (e.g. a small JSON object or a clearly formatted report), and
-- is **bounded** (a step limit) and **guarded** (one safety mitigation you implement and explain).
+---
 
-### Pick a scenario (or invent your own)
+## Scenario
 
-Choose one that interests you — these are starting points, not requirements:
+I chose the **Study Planner** scenario.
 
-- **Trip concierge** — tools: `search_flights`, `search_hotels`, `calculate`. Goal: "Plan a 3-day trip to Porto under €600 and give me the total." Output: a structured itinerary with a cost breakdown.
-- **Order assistant** — tools: `lookup_order`, `check_warranty`, `calculate`. Goal: "I want two more of my last order — total cost, and is it still under warranty?" Output: a structured summary.
-- **Study planner** — tools: `list_topics`, `estimate_effort`, `calculate`. Goal: "Build me a study plan for the exam with total hours." Output: a structured plan.
+This scenario is useful because exam preparation requires:
+- identifying topics
+- estimating study time for each topic
+- calculating total study hours
 
-Your tools can use small local data files (like the `orders.json` you've seen) or return mock data — the focus is the **agent's behaviour**, not a real backend.
+A single tool cannot complete this task alone.
 
-## Requirements
+---
 
-Your submission must include:
+## Tools Used
 
-1. **A working agent** with three tools that solves the multi-step goal by its own tool choices (not a script you hardwired).
-2. **A structured output** — the final answer in a parseable, well-shaped form, not just free text.
-3. **A step limit** so the agent cannot loop forever, with a sensible cap.
-4. **One safety mitigation** that you implement and can justify — for example, treating tool results as untrusted data, validating a tool's arguments before acting, or requiring confirmation before a "destructive" tool runs.
-5. **A README** in your repo covering:
-   - which scenario and three tools you chose, and why,
-   - one **reliability** note (how your step limit / failure handling protects the run),
-   - one **safety** note (the mitigation you added and what attack it defends against),
-   - a captured run showing the agent's tool calls and structured result.
+### 1. `list_topics()`
 
-## Submission
+Returns all exam topics from `topics.json`.
 
-Work on a branch, commit your code and README, open a Pull Request, and paste its link into the submission box.
+Example:
 
-**Deadline:** Sunday 28 June 2026, 23:59 local time. Late submissions are scored at 70% maximum.
+```python
+list_topics()
+```
 
-## Grading Rubric (100 pts)
+---
 
-| Area | What we look for | Points |
-|---|---|---|
-| **Agent works** | Three tools; the multi-step goal is solved by the agent's own tool choices | 30 |
-| **Structured output** | Final result is well-shaped and parseable, not free text | 15 |
-| **Reliability** | A working step limit; graceful handling when a tool fails or the goal can't be met | 20 |
-| **Safety** | A real mitigation, correctly implemented and clearly justified | 20 |
-| **README & run** | Clear tool choices, reliability + safety notes, and a captured run | 15 |
+### 2. `estimate_effort(topic)`
 
-## Quality Bar
+Estimates study hours for a topic based on its difficulty.
 
-- The agent **decides its own steps** — reviewers should see tool calls it chose, not a fixed script
-- The output is genuinely **structured** and could be consumed by another program
-- Both the **step limit** and the **safety mitigation** actually run, and you can explain what each protects against
-- No API key is committed to the repo
+Example:
+
+```python
+estimate_effort("Machine Learning")
+```
+
+Returns:
+
+```json
+{
+  "topic": "Machine Learning",
+  "hours": 6
+}
+```
+
+---
+
+### 3. `calculate(expression)`
+
+Calculates the total study hours.
+
+Example:
+
+```python
+calculate("4+2+6+6+2")
+```
+
+Returns:
+
+```json
+{
+  "result": 20
+}
+```
+
+---
+
+## Why These Tools?
+
+These three tools work together:
+
+- `list_topics()` retrieves the exam topics
+- `estimate_effort()` assigns study hours to each topic
+- `calculate()` sums all study hours
+
+This creates a complete study plan.
+
+---
+
+## Reliability
+
+The agent uses a **step limit**:
+
+```python
+MAX_STEPS = 8
+```
+
+This prevents infinite loops and ensures the program stops safely.
+
+If the goal cannot be completed, the agent will stop after the maximum number of steps.
+
+This protects the system from running forever.
+
+---
+
+## Safety
+
+The `calculate()` tool validates input before executing.
+
+Only numbers and mathematical operators are allowed:
+
+```python
+allowed = "0123456789+-*/(). "
+```
+
+This protects against code injection attacks such as:
+
+```python
+__import__("os").system("rm -rf /")
+```
+
+Without validation, malicious code could execute.
+
+This mitigation ensures tool inputs are treated as untrusted.
+
+---
+
+## Project Structure
+
+```text
+m9-08-assessment/
+│── main.py
+│── tools.py
+│── topics.json
+│── README.md
+│── .gitignore
+```
+
+---
+
+## Example Run
+
+Goal:
+
+```text
+Build me a study plan for my exam with total hours.
+```
+
+Execution:
+
+```text
+Goal: Build me a study plan for my exam with total hours.
+
+STEP 1: TOOL -> list_topics()
+RESULT: [{'id': 'topic-1', 'name': 'Linear Algebra', 'difficulty': 'medium'}, {'id': 'topic-2', 'name': 'Python Basics', 'difficulty': 'easy'}, {'id': 'topic-3', 'name': 'Machine Learning', 'difficulty': 'hard'}, {'id': 'topic-4', 'name': 'Statistics', 'difficulty': 'hard'}, {'id': 'topic-5', 'name': 'Data Visualization', 'difficulty': 'easy'}]
+
+STEP 2: TOOL -> estimate_effort(Linear Algebra)
+RESULT: {'topic': 'Linear Algebra', 'hours': 4}
+
+STEP 3: TOOL -> estimate_effort(Python Basics)
+RESULT: {'topic': 'Python Basics', 'hours': 2}
+
+STEP 4: TOOL -> estimate_effort(Machine Learning)
+RESULT: {'topic': 'Machine Learning', 'hours': 6}
+
+STEP 5: TOOL -> estimate_effort(Statistics)
+RESULT: {'topic': 'Statistics', 'hours': 6}
+
+STEP 6: TOOL -> estimate_effort(Data Visualization)
+RESULT: {'topic': 'Data Visualization', 'hours': 2}
+
+STEP 7: TOOL -> calculate(4+2+6+6+2)
+RESULT: {'result': 20}
+
+FINAL OUTPUT:
+{'study_plan': [{'topic': 'Linear Algebra', 'hours': 4}, {'topic': 'Python Basics', 'hours': 2}, {'topic': 'Machine Learning', 'hours': 6}, {'topic': 'Statistics', 'hours': 6}, {'topic': 'Data Visualization', 'hours': 2}], 'total_hours': 20}
+```
+
+---
+
+## Final Structured Output
+
+```json
+{
+  "study_plan": [
+    {
+      "topic": "Linear Algebra",
+      "hours": 4
+    },
+    {
+      "topic": "Python Basics",
+      "hours": 2
+    },
+    {
+      "topic": "Machine Learning",
+      "hours": 6
+    },
+    {
+      "topic": "Statistics",
+      "hours": 6
+    },
+    {
+      "topic": "Data Visualization",
+      "hours": 2
+    }
+  ],
+  "total_hours": 20
+}
+```
+
+---
+
+## How to Run
+
+Install dependencies:
+
+```bash
+pip install python-dotenv
+```
+
+Run the project:
+
+```bash
+python main.py
+```
+
+---
+
+## Notes
+
+- This project uses a **hand-rolled agent loop** instead of Google ADK.
+- The agent performs **multi-step reasoning** by calling three tools.
+- The output is **structured and parseable**.
+- The system includes **reliability protection** (step limit).
+- The system includes **safety protection** (input validation).

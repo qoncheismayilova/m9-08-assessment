@@ -1,3 +1,0 @@
-google-adk
-# Or, if you hand-roll the loop instead of using ADK:
-google-genai
